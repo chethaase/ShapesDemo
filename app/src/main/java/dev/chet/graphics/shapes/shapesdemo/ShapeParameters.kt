@@ -207,12 +207,6 @@ class ShapeParameters(
             usesInnerRatio = false,
             usesInnerParameters = false
         )
-
-        /*
-        TODO: Add quarty. Needs to be able to specify a rounding radius of up to 2f
-        ShapeItem("Quarty", { DefaultShapes.quarty(roundness.value, smooth.value) },
-        usesSides = false, usesInnerRatio = false),
-        */
     )
 
     fun selectedShape() = derivedStateOf { shapes[shapeIx] }

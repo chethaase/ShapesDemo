@@ -29,6 +29,10 @@ import androidx.graphics.shapes.drawMorph
 import androidx.graphics.shapes.drawPolygon
 import kotlin.math.min
 
+/**
+ * This custom view takes either a Shape or a Morph. Most of the code is shared between them,
+ * with slight adjustments for transforming or rendering the object.
+ */
 class ShapeView(context: Context, val shape: RoundedPolygon? = null,
                 morph: Morph? = null) : View(context) {
 
