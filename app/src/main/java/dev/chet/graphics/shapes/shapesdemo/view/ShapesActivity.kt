@@ -16,15 +16,16 @@
 
 package dev.chet.graphics.shapes.shapesdemo.view
 
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.graphics.Color
-import android.graphics.Matrix
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.LinearLayout
 import androidx.graphics.shapes.CornerRounding
+import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.Star
 import dev.chet.graphics.shapes.shapesdemo.SquarePoints
@@ -34,6 +35,8 @@ import dev.chet.graphics.shapes.shapesdemo.toRadians
 class ShapesActivity : Activity() {
 
     val shapes = mutableListOf<RoundedPolygon>()
+    var currentShapeIndex = 0
+    lateinit var morphView: ShapeView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +50,8 @@ class ShapesActivity : Activity() {
         setupShapes()
 
         addShapeViews(container)
+
+        addMorphView(container)
     }
 
     private fun getShapeView(shape: RoundedPolygon, width: Int, height: Int): View {
@@ -86,11 +91,11 @@ class ShapesActivity : Activity() {
 
             // Circle
             RoundedPolygon(4, rounding = CornerRounding(1f)),
-            Star(12, innerRadiusRatio = .928f, rounding = CornerRounding(.1f)),
+            Star(12, innerRadius = .928f, rounding = CornerRounding(.1f)),
 
             // Clovers
-            Star(4, innerRadiusRatio = .352f, rounding = CornerRounding(.32f)),
-            Star(4, innerRadiusRatio = .152f, rounding = CornerRounding(.22f),
+            Star(4, innerRadius = .352f, rounding = CornerRounding(.32f)),
+            Star(4, innerRadius = .152f, rounding = CornerRounding(.22f),
                     innerRounding = CornerRounding.Unrounded),
 
             // Irregular Triangle
@@ -110,13 +115,13 @@ class ShapesActivity : Activity() {
             RoundedPolygon(5),
 
             // Unrounded 8-point star
-            Star(8, innerRadiusRatio = .6f)
+            Star(8, innerRadius = .6f)
         ))
     }
 
     private fun addShapeViews(container: ViewGroup) {
-        val WIDTH = 200
-        val HEIGHT = 200
+        val width = 200
+        val height = 200
 
         var shapeIndex = 0
         var row: LinearLayout? = null
@@ -129,8 +134,33 @@ class ShapesActivity : Activity() {
                 row.orientation = LinearLayout.HORIZONTAL
                 container.addView(row)
             }
-            row!!.addView(getShapeView(shapes[shapeIndex], WIDTH, HEIGHT))
+            val shapeView = getShapeView(shapes[shapeIndex], width, height) as ShapeView
+            row!!.addView(shapeView)
+            setupMorphClick(shapeIndex = shapeIndex, shapeView)
             ++shapeIndex
         }
+    }
+
+    private fun setupMorphClick(shapeIndex: Int, view: ShapeView) {
+        view.setOnClickListener {
+            morphView.morph = Morph(shapes[currentShapeIndex], shapes[shapeIndex])
+            val animator = ObjectAnimator.ofFloat(morphView.morph, "progress",
+                0f, 1f)
+            animator.addUpdateListener {
+                morphView.invalidate()
+            }
+            animator.start()
+            currentShapeIndex = shapeIndex
+        }
+    }
+
+    private fun addMorphView(container: ViewGroup) {
+        val morph = Morph(shapes[0], shapes[1])
+        morphView = ShapeView(this, morph = morph)
+        val layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
+            LayoutParams.WRAP_CONTENT)
+        layoutParams.setMargins(7, 30, 7, 5)
+        morphView.layoutParams = layoutParams
+        container.addView(morphView)
     }
 }

@@ -23,13 +23,21 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.RectF
 import android.view.View
+import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
+import androidx.graphics.shapes.drawMorph
 import androidx.graphics.shapes.drawPolygon
 import kotlin.math.min
 
-class ShapeView(context: Context, var shape: RoundedPolygon) : View(context) {
+class ShapeView(context: Context, val shape: RoundedPolygon? = null,
+                morph: Morph? = null) : View(context) {
 
     val paint = Paint()
+    var morph: Morph? = morph
+    set(value) {
+        field = value
+        updateTransform()
+    }
 
     init {
         paint.setColor(Color.WHITE)
@@ -55,12 +63,22 @@ class ShapeView(context: Context, var shape: RoundedPolygon) : View(context) {
         return matrix
     }
 
+    private fun updateTransform() {
+        if (shape != null) {
+            val matrix = calculateMatrix(shape.bounds)
+            shape.transform(matrix)
+        } else if (morph != null) {
+            val matrix = calculateMatrix(morph!!.bounds)
+            morph!!.transform(matrix)
+        }
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        val matrix = calculateMatrix(shape.bounds)
-        shape.transform(matrix)
+        updateTransform()
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawPolygon(shape, paint)
+        if (shape != null) canvas.drawPolygon(shape, paint)
+        else if (morph != null) canvas.drawMorph(morph!!, paint)
     }
 }

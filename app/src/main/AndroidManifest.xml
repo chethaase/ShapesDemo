@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".compose.ShapesComposeActivity"
+            android:name=".compose.ShapesAndMorphsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

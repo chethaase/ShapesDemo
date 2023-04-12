@@ -384,7 +384,7 @@ private suspend fun doAnimation(progress: Animatable<Float, AnimationVector1D>) 
     )
 }
 
-class ShapesComposeActivity : FragmentActivity() {
+class ShapesAndMorphsActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent(parent = null) {

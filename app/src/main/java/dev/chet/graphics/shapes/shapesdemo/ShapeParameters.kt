@@ -95,8 +95,8 @@ class ShapeParameters(
     internal val shapes = listOf(
         ShapeItem("Star", shapegen = {
             Star(
-                numOuterVertices = this.sides.value.roundToInt(),
-                innerRadiusRatio = this.innerRadiusRatio.value,
+                numVerticesPerRadius = this.sides.value.roundToInt(),
+                innerRadius = this.innerRadiusRatio.value,
                 rounding = CornerRounding(this.roundness.value, this.smooth.value),
                 innerRounding = CornerRounding(
                     this.innerRoundness.value,
