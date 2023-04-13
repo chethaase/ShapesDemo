@@ -184,26 +184,26 @@ fun MainScreen() {
             // Scallop
             ShapeParameters(
                 sides = 12,
-                innerRadiusRatio = .928f,
+                innerRadius = .928f,
                 roundness = .1f,
                 shapeId = ShapeParameters.ShapeId.Star
             ),
             // Clover
             ShapeParameters(
                 sides = 4,
-                innerRadiusRatio = .352f,
+                innerRadius = .352f,
                 roundness = .32f,
                 rotation = 45f,
                 shapeId = ShapeParameters.ShapeId.Star
             ),
             ShapeParameters(
-                innerRadiusRatio = 0.1f,
+                innerRadius = 0.1f,
                 roundness = 0.22f,
                 shapeId = ShapeParameters.ShapeId.Triangle
             ),
             ShapeParameters(
                 sides = 8,
-                innerRadiusRatio = .784f,
+                innerRadius = .784f,
                 roundness = .16f,
                 shapeId = ShapeParameters.ShapeId.Star
             ),
@@ -211,25 +211,25 @@ fun MainScreen() {
             // LINE 2
             ShapeParameters(
                 sides = 15,
-                innerRadiusRatio = .892f,
+                innerRadius = .892f,
                 roundness = 1f,
                 shapeId = ShapeParameters.ShapeId.Star
             ),
             ShapeParameters(
-                innerRadiusRatio = .19f,
+                innerRadius = .19f,
                 roundness = 0.86f,
                 rotation = -45f,
                 shapeId = ShapeParameters.ShapeId.Blob
             ),
             ShapeParameters(
-                innerRadiusRatio = .19f,
+                innerRadius = .19f,
                 roundness = 0.86f,
                 rotation = 45f,
                 shapeId = ShapeParameters.ShapeId.Blob
             ),
             ShapeParameters(
                 sides = 12,
-                innerRadiusRatio = .928f,
+                innerRadius = .928f,
                 roundness = .928f,
                 shapeId = ShapeParameters.ShapeId.Star
             ),
@@ -262,14 +262,14 @@ fun MainScreen() {
             ShapeParameters(
                 sides = 5,
                 rotation = -360f / 20,
-                innerRadiusRatio = .3f,
+                innerRadius = .3f,
                 shapeId = ShapeParameters.ShapeId.Star
             ),
 
             // 8-Sided Star
             ShapeParameters(
                 sides = 8,
-                innerRadiusRatio = .6f,
+                innerRadius = .6f,
                 shapeId = ShapeParameters.ShapeId.Star
             )
         )

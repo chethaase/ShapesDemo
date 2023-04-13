@@ -65,11 +65,11 @@ class ShapesActivity : Activity() {
 
     private fun setupShapes() {
         // Triangle vertices
-        val triangleInnerRadiusRatio = .1f
+        val triangleinnerRadius = .1f
         val trianglePoints = listOf(
             radialToCartesian(1f, 270f.toRadians()),
             radialToCartesian(1f, 30f.toRadians()),
-            radialToCartesian(triangleInnerRadiusRatio, 90f.toRadians()),
+            radialToCartesian(triangleinnerRadius, 90f.toRadians()),
             radialToCartesian(1f, 150f.toRadians()),
         )
 

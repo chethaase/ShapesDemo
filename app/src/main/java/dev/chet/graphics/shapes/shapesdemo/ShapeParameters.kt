@@ -52,7 +52,7 @@ data class ShapeItem(
 
 class ShapeParameters(
     sides: Int = 5,
-    innerRadiusRatio: Float = 0.5f,
+    innerRadius: Float = 0.5f,
     roundness: Float = 0f,
     smooth: Float = 0f,
     innerRoundness: Float = roundness,
@@ -61,7 +61,7 @@ class ShapeParameters(
     shapeId: ShapeId = ShapeId.Polygon
 ) {
     internal val sides = mutableStateOf(sides.toFloat())
-    internal val innerRadiusRatio = mutableStateOf(innerRadiusRatio)
+    internal val innerRadius = mutableStateOf(innerRadius)
     internal val roundness = mutableStateOf(roundness)
     internal val smooth = mutableStateOf(smooth)
     internal val innerRoundness = mutableStateOf(innerRoundness)
@@ -72,7 +72,7 @@ class ShapeParameters(
 
     fun copy() = ShapeParameters(
         this.sides.value.roundToInt(),
-        this.innerRadiusRatio.value,
+        this.innerRadius.value,
         this.roundness.value,
         this.smooth.value,
         this.innerRoundness.value,
@@ -96,7 +96,7 @@ class ShapeParameters(
         ShapeItem("Star", shapegen = {
             Star(
                 numVerticesPerRadius = this.sides.value.roundToInt(),
-                innerRadius = this.innerRadiusRatio.value,
+                innerRadius = this.innerRadius.value,
                 rounding = CornerRounding(this.roundness.value, this.smooth.value),
                 innerRounding = CornerRounding(
                     this.innerRoundness.value,
@@ -107,7 +107,7 @@ class ShapeParameters(
             debugDump = {
                 debugLog(
                     "ShapeParameters(sides = ${this.sides.value.roundToInt()}, " +
-                            "innerRadiusRatio = ${this.innerRadiusRatio.value}f, " +
+                            "innerRadius = ${this.innerRadius.value}f, " +
                             "roundness = ${this.roundness.value}f, " +
                             "smooth = ${this.smooth.value}f, " +
                             "innerRoundness = ${this.innerRoundness.value}f, " +
@@ -138,7 +138,7 @@ class ShapeParameters(
                 val points = listOf(
                     radialToCartesian(1f, 270f.toRadians()),
                     radialToCartesian(1f, 30f.toRadians()),
-                    radialToCartesian(this.innerRadiusRatio.value, 90f.toRadians()),
+                    radialToCartesian(this.innerRadius.value, 90f.toRadians()),
                     radialToCartesian(1f, 150f.toRadians()),
                 )
                 RoundedPolygon(
@@ -149,7 +149,7 @@ class ShapeParameters(
             },
             debugDump = {
                 debugLog(
-                    "ShapeParameters(innerRadiusRatio = ${this.innerRadiusRatio.value}f, " +
+                    "ShapeParameters(innerRadius = ${this.innerRadius.value}f, " +
                             "smooth = ${this.smooth.value}f, " +
                             rotationAsString() +
                             "shapeId = ShapeParameters.ShapeId.Triangle)"
@@ -159,7 +159,7 @@ class ShapeParameters(
         ),
         ShapeItem(
             "Blob", shapegen = {
-                val sx = this.innerRadiusRatio.value.coerceAtLeast(0.1f)
+                val sx = this.innerRadius.value.coerceAtLeast(0.1f)
                 val sy = this.roundness.value.coerceAtLeast(0.1f)
                 RoundedPolygon(
                     listOf(

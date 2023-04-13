@@ -68,11 +68,11 @@ fun ShapeEditor(params: ShapeParameters, onClose: () -> Unit) {
         }
         MySlider("Sides", 3f, 20f, 1f, params.sides, shapeParams.usesSides)
         MySlider(
-            "InnerRadiusRatio",
+            "innerRadius",
             0.1f,
             0.999f,
             0f,
-            params.innerRadiusRatio,
+            params.innerRadius,
             shapeParams.usesInnerRatio
         )
         MySlider("RoundRadius", 0f, 1f, 0f, params.roundness, shapeParams.usesRoundness)
