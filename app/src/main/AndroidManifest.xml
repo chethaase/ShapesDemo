@@ -12,7 +12,8 @@
         android:theme="@style/Theme.ShapesDemo"
         tools:targetApi="31">
         <activity
-            android:name=".view.ShapesActivity"
+            android:label="Shapes and Morphs"
+            android:name=".compose.ShapesAndMorphsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,8 +22,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".compose.ShapesAndMorphsActivity"
-            android:exported="true">
+            android:label="Shapes"
+            android:name=".view.ShapesActivity"
+            android:exported="true"
+            android:taskAffinity="dev.chet.graphics.shapes.shapesdemo.ShapesActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
