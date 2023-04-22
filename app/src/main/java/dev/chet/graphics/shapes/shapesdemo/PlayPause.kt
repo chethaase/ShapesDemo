@@ -55,7 +55,7 @@ private fun List<PointF>.transformFrom(fl: Float): List<PointF> = this.map { it.
 
 @Composable
 @Preview
-fun MorphPreview() {
+fun PlayPausePreview() {
     Box(
         modifier = Modifier
             .size(200.dp)
