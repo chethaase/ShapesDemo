@@ -16,8 +16,6 @@
 
 package dev.chet.graphics.shapes.shapesdemo.compose
 
-import android.graphics.PointF
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -44,9 +42,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import dev.chet.graphics.shapes.shapesdemo.ShapeParameters
-import kotlin.math.cos
 import kotlin.math.roundToInt
-import kotlin.math.sin
 
 @Composable
 fun ShapeEditor(params: ShapeParameters, onClose: () -> Unit) {

@@ -27,11 +27,15 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,11 +53,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposePath
-import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.graphics.shapes.Morph
@@ -125,19 +129,25 @@ private fun MorphComposableImpl(
     sizedMorph: SizedMorph,
     modifier: Modifier = Modifier,
     isDebug: Boolean = false,
-    prep: ContentDrawScope.() -> Unit
+    // todo remove this
+    prep: DrawScope.() -> Unit
 ) {
-    Box(
+    Spacer(
         modifier
             .fillMaxSize()
-            .drawWithContent {
-                prep()
-                drawContent()
+            .drawWithCache {
                 sizedMorph.resizeMaybe(size.width, size.height)
-                if (isDebug) {
-                    debugDraw(sizedMorph.morph)
-                } else {
-                    drawPath(sizedMorph.morph.asPath().asComposePath(), Color.White)
+                onDrawBehind {
+                    prep()
+                    if (isDebug) {
+                        debugDraw(sizedMorph.morph)
+                    } else {
+                        drawPath(
+                            sizedMorph.morph
+                                .asPath()
+                                .asComposePath(), Color.White
+                        )
+                    }
                 }
             })
 }
@@ -148,26 +158,27 @@ internal fun PolygonComposableImpl(
     modifier: Modifier = Modifier,
     debug: Boolean = false
 ) {
-    val sizedPolygonCache = remember(shape) {
-        mutableMapOf<Size, RoundedPolygon>()
-    }
-    Box(
+    Spacer(
         modifier
             .fillMaxSize()
-            .drawWithContent {
-                drawContent()
-                val sizedPolygon = sizedPolygonCache.getOrPut(size) {
-                    val matrix = calculateMatrix(TheBounds, size.width, size.height)
-                    RoundedPolygon(shape).apply { transform(matrix) }
-                }
-                if (debug) {
-                    debugDraw(sizedPolygon.toCubicShape())
-                } else {
-                    drawPath(sizedPolygon.toPath().asComposePath(), Color.White)
+            .drawWithCache {
+                val matrix = calculateMatrix(TheBounds, size.width, size.height)
+                val sizedPolygon = RoundedPolygon(shape).apply { transform(matrix) }
+                onDrawBehind {
+                    if (debug) {
+                        debugDraw(sizedPolygon.toCubicShape())
+                    } else {
+                        drawPath(
+                            sizedPolygon
+                                .toPath()
+                                .asComposePath(), Color.White
+                        )
+                    }
                 }
             })
 }
 
+@Preview
 @Composable
 fun MainScreen() {
     var editing by remember { mutableStateOf<ShapeParameters?>(null) }
@@ -279,6 +290,7 @@ fun MainScreen() {
     } ?: MorphScreen(shapes, selectedShape) { editing = shapes[selectedShape.value] }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MorphScreen(
     shapeParams: List<ShapeParameters>,
@@ -324,34 +336,33 @@ fun MorphScreen(
     }
     Column(
         Modifier
-            .fillMaxSize()
             .background(Color.Black)
+            .padding(16.dp)
+            .fillMaxSize()
+
     ) {
-        repeat(3) { rowIx ->
-            Row(Modifier.fillMaxWidth()) {
-                repeat(5) { columnIx ->
-                    val shapeIx = rowIx * 5 + columnIx
-                    val borderAlpha = (
-                        (if (shapeIx == selectedShape.value) progress.value else 0f) +
-                        (if (shapeIx == currShape) 1 - progress.value else 0f)
-                    ).coerceIn(0f, 1f)
-                    Box(
-                        Modifier
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .padding(horizontal = 5.dp)
-                            .border(
-                                3.dp,
-                                Color.Red.copy(alpha = borderAlpha)
-                            )
-                    ) {
-                        // draw shape
-                        val shape = shapes[shapeIx]
-                        PolygonComposable(shape, Modifier.clickable { clickFn(shapeIx) })
-                    }
+        FlowRow(Modifier.fillMaxWidth(), maxItemsInEachRow = 5) {
+            shapes.forEachIndexed { index, shape ->
+                val borderAlpha = (
+                        (if (index == selectedShape.value) progress.value else 0f) +
+                                (if (index == currShape) 1 - progress.value else 0f)
+                        ).coerceIn(0f, 1f)
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .aspectRatio(1f)
+                        .padding(horizontal = 5.dp)
+                        .border(
+                            3.dp,
+                            Color.Red.copy(alpha = borderAlpha)
+                        )
+                ) {
+                    // draw shape
+                    PolygonComposable(shape, Modifier.clickable { clickFn(index) })
                 }
             }
         }
+
         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             Button(onClick = { debug = !debug }) {
                 Text(if (debug) "Debug" else "Shape")
