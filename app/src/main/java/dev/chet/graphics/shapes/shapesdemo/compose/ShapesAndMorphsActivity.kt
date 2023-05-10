@@ -27,7 +27,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,6 +44,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -56,7 +56,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposePath
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
@@ -75,13 +74,16 @@ fun PolygonComposable(polygon: RoundedPolygon, modifier: Modifier = Modifier) =
 @Composable
 private fun MorphComposable(
     sizedMorph: SizedMorph,
-    progress: () -> Float,
+    progress: Float,
     modifier: Modifier = Modifier,
     isDebug: Boolean = false
-) =
-    MorphComposableImpl(sizedMorph, modifier, isDebug) {
-        sizedMorph.morph.progress = progress()
+)  {
+    LaunchedEffect(progress) {
+        sizedMorph.morph.progress = progress
     }
+    MorphComposableImpl(sizedMorph, modifier, isDebug)
+}
+
 
 internal fun calculateMatrix(bounds: RectF, width: Float, height: Float): Matrix {
     val originalWidth = bounds.right - bounds.left
@@ -128,25 +130,21 @@ private class SizedMorph(val morph: Morph) {
 private fun MorphComposableImpl(
     sizedMorph: SizedMorph,
     modifier: Modifier = Modifier,
-    isDebug: Boolean = false,
-    // todo remove this
-    prep: DrawScope.() -> Unit
+    isDebug: Boolean = false
 ) {
     Spacer(
         modifier
             .fillMaxSize()
             .drawWithCache {
                 sizedMorph.resizeMaybe(size.width, size.height)
+                val path = sizedMorph.morph
+                    .asPath()
+                    .asComposePath()
                 onDrawBehind {
-                    prep()
                     if (isDebug) {
                         debugDraw(sizedMorph.morph)
                     } else {
-                        drawPath(
-                            sizedMorph.morph
-                                .asPath()
-                                .asComposePath(), Color.White
-                        )
+                        drawPath(path, Color.White)
                     }
                 }
             })
@@ -182,7 +180,7 @@ internal fun PolygonComposableImpl(
 @Composable
 fun MainScreen() {
     var editing by remember { mutableStateOf<ShapeParameters?>(null) }
-    var selectedShape = remember { mutableStateOf(0) }
+    val selectedShape = remember { mutableStateOf(0) }
     val shapes = remember {
         listOf(
             // LINE 1
@@ -374,7 +372,7 @@ fun MorphScreen(
         Slider(value = progress.value.coerceIn(0f, 1f), onValueChange = {
             scope.launch { progress.snapTo(it) }
         })
-        MorphComposable(morphed, { progress.value },
+        MorphComposable(morphed, progress.value,
             Modifier
                 .fillMaxSize()
                 .clickable(
