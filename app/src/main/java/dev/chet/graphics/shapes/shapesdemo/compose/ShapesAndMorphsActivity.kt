@@ -38,13 +38,11 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,17 +51,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.graphics.shapes.Morph
@@ -414,42 +407,5 @@ class ShapesAndMorphsActivity : FragmentActivity() {
     }
 }
 
-@Preview
-@Composable
-fun ShapeAsClip() {
-    val animatedProgress = remember {
-        Animatable(0f)
-    }
-    LaunchedEffect(key1 = "hi", block = {
-        animatedProgress.animateTo(1f)
-    })
-    val shapeA = RoundedPolygon(5)
-    val shapeB = RoundedPolygon(10)
-    Box(modifier = Modifier
-        .clip(MorphPolygonShape(shapeA, shapeB, animatedProgress.value))
-        .background(Color.Gray)
-        .size(200.dp)) {
-    }
-}
 
 
-class MorphPolygonShape(
-    val shapeA: androidx.graphics.shapes.RoundedPolygon,
-    val shapeB: androidx.graphics.shapes.RoundedPolygon,
-    val percentage: Float) : Shape {
-
-
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        val matrixA = calculateMatrix(shapeA.bounds, size.width, size.height)
-        shapeA.transform(matrixA)
-        shapeB.transform(matrixA)
-
-        val morph = Morph(shapeA, shapeB)
-        morph.progress = percentage
-        return Outline.Generic(morph.asPath().asComposePath())
-    }
-}
