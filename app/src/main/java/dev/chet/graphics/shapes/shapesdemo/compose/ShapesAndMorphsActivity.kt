@@ -34,7 +34,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,7 +43,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,9 +51,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
@@ -74,16 +74,13 @@ fun PolygonComposable(polygon: RoundedPolygon, modifier: Modifier = Modifier) =
 @Composable
 private fun MorphComposable(
     sizedMorph: SizedMorph,
-    progress: Float,
+    progress: () -> Float,
     modifier: Modifier = Modifier,
     isDebug: Boolean = false
-)  {
-    LaunchedEffect(progress) {
-        sizedMorph.morph.progress = progress
+) =
+    MorphComposableImpl(sizedMorph, modifier, isDebug) {
+        sizedMorph.morph.progress = progress()
     }
-    MorphComposableImpl(sizedMorph, modifier, isDebug)
-}
-
 
 internal fun calculateMatrix(bounds: RectF, width: Float, height: Float): Matrix {
     val originalWidth = bounds.right - bounds.left
@@ -130,22 +127,24 @@ private class SizedMorph(val morph: Morph) {
 private fun MorphComposableImpl(
     sizedMorph: SizedMorph,
     modifier: Modifier = Modifier,
-    isDebug: Boolean = false
+    isDebug: Boolean = false,
+    prep: ContentDrawScope.() -> Unit
 ) {
-    Spacer(
+    Box(
         modifier
             .fillMaxSize()
-            .drawWithCache {
+            .drawWithContent {
+                prep()
+                drawContent()
                 sizedMorph.resizeMaybe(size.width, size.height)
-                val path = sizedMorph.morph
-                    .asPath()
-                    .asComposePath()
-                onDrawBehind {
-                    if (isDebug) {
-                        debugDraw(sizedMorph.morph)
-                    } else {
-                        drawPath(path, Color.White)
-                    }
+                if (isDebug) {
+                    debugDraw(sizedMorph.morph)
+                } else {
+                    drawPath(
+                        sizedMorph.morph
+                            .asPath()
+                            .asComposePath(), Color.White
+                    )
                 }
             })
 }
@@ -156,22 +155,26 @@ internal fun PolygonComposableImpl(
     modifier: Modifier = Modifier,
     debug: Boolean = false
 ) {
-    Spacer(
+    val sizedPolygonCache = remember(shape) {
+        mutableMapOf<Size, RoundedPolygon>()
+    }
+    Box(
         modifier
             .fillMaxSize()
-            .drawWithCache {
-                val matrix = calculateMatrix(TheBounds, size.width, size.height)
-                val sizedPolygon = RoundedPolygon(shape).apply { transform(matrix) }
-                onDrawBehind {
-                    if (debug) {
-                        debugDraw(sizedPolygon.toCubicShape())
-                    } else {
-                        drawPath(
-                            sizedPolygon
-                                .toPath()
-                                .asComposePath(), Color.White
-                        )
-                    }
+            .drawWithContent {
+                drawContent()
+                val sizedPolygon = sizedPolygonCache.getOrPut(size) {
+                    val matrix = calculateMatrix(TheBounds, size.width, size.height)
+                    RoundedPolygon(shape).apply { transform(matrix) }
+                }
+                if (debug) {
+                    debugDraw(sizedPolygon.toCubicShape())
+                } else {
+                    drawPath(
+                        sizedPolygon
+                            .toPath()
+                            .asComposePath(), Color.White
+                    )
                 }
             })
 }
@@ -372,7 +375,7 @@ fun MorphScreen(
         Slider(value = progress.value.coerceIn(0f, 1f), onValueChange = {
             scope.launch { progress.snapTo(it) }
         })
-        MorphComposable(morphed, progress.value,
+        MorphComposable(morphed, { progress.value },
             Modifier
                 .fillMaxSize()
                 .clickable(
