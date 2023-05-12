@@ -39,7 +39,8 @@ class MorphPolygonShape(
     ): Outline {
         val matrixA = calculateMatrix(shapeA.bounds, size.width, size.height)
         shapeA.transform(matrixA)
-        shapeB.transform(matrixA)
+        val matrixB = calculateMatrix(shapeB.bounds, size.width, size.height)
+        shapeB.transform(matrixB)
         val morph = Morph(shapeA, shapeB)
         morph.progress = percentage
         return Outline.Generic(morph.asPath().asComposePath())
@@ -49,7 +50,7 @@ class MorphPolygonShape(
 @Composable
 fun ShapeAsClip() {
     val shapeA = RoundedPolygon(5, rounding = CornerRounding(0.2f))
-    val shapeB = RoundedPolygon(10, rounding = CornerRounding(0.3f))
+    val shapeB = RoundedPolygon(3, rounding = CornerRounding(0.3f))
     val interactionSource = remember {
         MutableInteractionSource()
     }
