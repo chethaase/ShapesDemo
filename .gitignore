@@ -3,3 +3,4 @@
 /app/build/
 /app/build/intermediates/javac/debug/classes/
 /.idea/vcs.xml
+/local.properties

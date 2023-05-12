@@ -31,6 +31,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,6 +56,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.graphics.shapes.Morph
@@ -137,7 +140,11 @@ private fun MorphComposableImpl(
                 if (isDebug) {
                     debugDraw(sizedMorph.morph)
                 } else {
-                    drawPath(sizedMorph.morph.asPath().asComposePath(), Color.White)
+                    drawPath(
+                        sizedMorph.morph
+                            .asPath()
+                            .asComposePath(), Color.White
+                    )
                 }
             })
 }
@@ -163,15 +170,20 @@ internal fun PolygonComposableImpl(
                 if (debug) {
                     debugDraw(sizedPolygon.toCubicShape())
                 } else {
-                    drawPath(sizedPolygon.toPath().asComposePath(), Color.White)
+                    drawPath(
+                        sizedPolygon
+                            .toPath()
+                            .asComposePath(), Color.White
+                    )
                 }
             })
 }
 
+@Preview
 @Composable
 fun MainScreen() {
     var editing by remember { mutableStateOf<ShapeParameters?>(null) }
-    var selectedShape = remember { mutableStateOf(0) }
+    val selectedShape = remember { mutableStateOf(0) }
     val shapes = remember {
         listOf(
             // LINE 1
@@ -279,6 +291,7 @@ fun MainScreen() {
     } ?: MorphScreen(shapes, selectedShape) { editing = shapes[selectedShape.value] }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MorphScreen(
     shapeParams: List<ShapeParameters>,
@@ -324,34 +337,33 @@ fun MorphScreen(
     }
     Column(
         Modifier
-            .fillMaxSize()
             .background(Color.Black)
+            .padding(16.dp)
+            .fillMaxSize()
+
     ) {
-        repeat(3) { rowIx ->
-            Row(Modifier.fillMaxWidth()) {
-                repeat(5) { columnIx ->
-                    val shapeIx = rowIx * 5 + columnIx
-                    val borderAlpha = (
-                        (if (shapeIx == selectedShape.value) progress.value else 0f) +
-                        (if (shapeIx == currShape) 1 - progress.value else 0f)
-                    ).coerceIn(0f, 1f)
-                    Box(
-                        Modifier
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .padding(horizontal = 5.dp)
-                            .border(
-                                3.dp,
-                                Color.Red.copy(alpha = borderAlpha)
-                            )
-                    ) {
-                        // draw shape
-                        val shape = shapes[shapeIx]
-                        PolygonComposable(shape, Modifier.clickable { clickFn(shapeIx) })
-                    }
+        FlowRow(Modifier.fillMaxWidth(), maxItemsInEachRow = 5) {
+            shapes.forEachIndexed { index, shape ->
+                val borderAlpha = (
+                        (if (index == selectedShape.value) progress.value else 0f) +
+                                (if (index == currShape) 1 - progress.value else 0f)
+                        ).coerceIn(0f, 1f)
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .aspectRatio(1f)
+                        .padding(horizontal = 5.dp)
+                        .border(
+                            3.dp,
+                            Color.Red.copy(alpha = borderAlpha)
+                        )
+                ) {
+                    // draw shape
+                    PolygonComposable(shape, Modifier.clickable { clickFn(index) })
                 }
             }
         }
+
         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             Button(onClick = { debug = !debug }) {
                 Text(if (debug) "Debug" else "Shape")
