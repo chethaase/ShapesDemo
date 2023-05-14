@@ -72,7 +72,7 @@ fun PolygonComposable(polygon: RoundedPolygon, modifier: Modifier = Modifier) =
     PolygonComposableImpl(polygon, modifier)
 
 @Composable
-private fun MorphComposable(
+internal fun MorphComposable(
     sizedMorph: SizedMorph,
     progress: () -> Float,
     modifier: Modifier = Modifier,
@@ -109,7 +109,7 @@ internal fun PointF.transform(
 
 private val TheBounds = RectF(0f, 0f, 1f, 1f)
 
-private class SizedMorph(val morph: Morph) {
+internal class SizedMorph(val morph: Morph) {
     var width = 1f
     var height = 1f
 
