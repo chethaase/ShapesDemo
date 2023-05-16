@@ -109,13 +109,13 @@ internal fun PointF.transform(
 
 private val TheBounds = RectF(0f, 0f, 1f, 1f)
 
-private class SizedMorph(val morph: Morph) {
-    var width = 1f
-    var height = 1f
+internal class SizedMorph(val morph: Morph) {
+    var width = morph.bounds.width()
+    var height = morph.bounds.height()
 
     fun resizeMaybe(newWidth: Float, newHeight: Float) {
         if (abs(width - newWidth) > 1e-4 || abs(height - newHeight) > 1e-4) {
-            val matrix = calculateMatrix(RectF(0f, 0f, width, height), newWidth, newHeight)
+            val matrix = calculateMatrix(morph.bounds, newWidth, newHeight)
             morph.transform(matrix)
             width = newWidth
             height = newHeight
