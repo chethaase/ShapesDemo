@@ -23,15 +23,11 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.graphics.plus
-import androidx.core.graphics.times
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
-import androidx.graphics.shapes.Star
-import kotlin.math.cos
+import androidx.graphics.shapes.star
 import kotlin.math.max
 import kotlin.math.roundToInt
-import kotlin.math.sin
 
 private val LOG_TAG = "ShapesParameters"
 private val DEBUG = false
@@ -94,7 +90,7 @@ class ShapeParameters(
     // Primitive shapes we can draw (so far)
     internal val shapes = listOf(
         ShapeItem("Star", shapegen = {
-            Star(
+            RoundedPolygon.star(
                 numVerticesPerRadius = this.sides.value.roundToInt(),
                 innerRadius = this.innerRadius.value,
                 rounding = CornerRounding(this.roundness.value, this.smooth.value),

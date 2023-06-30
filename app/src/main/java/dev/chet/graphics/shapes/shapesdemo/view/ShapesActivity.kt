@@ -27,7 +27,7 @@ import android.widget.LinearLayout
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
-import androidx.graphics.shapes.Star
+import androidx.graphics.shapes.star
 import dev.chet.graphics.shapes.shapesdemo.SquarePoints
 import dev.chet.graphics.shapes.shapesdemo.radialToCartesian
 import dev.chet.graphics.shapes.shapesdemo.toRadians
@@ -91,11 +91,11 @@ class ShapesActivity : Activity() {
 
             // Circle
             RoundedPolygon(4, rounding = CornerRounding(1f)),
-            Star(12, innerRadius = .928f, rounding = CornerRounding(.1f)),
+            RoundedPolygon.star(12, innerRadius = .928f, rounding = CornerRounding(.1f)),
 
             // Clovers
-            Star(4, innerRadius = .352f, rounding = CornerRounding(.32f)),
-            Star(4, innerRadius = .152f, rounding = CornerRounding(.22f),
+            RoundedPolygon.star(4, innerRadius = .352f, rounding = CornerRounding(.32f)),
+            RoundedPolygon.star(4, innerRadius = .152f, rounding = CornerRounding(.22f),
                     innerRounding = CornerRounding.Unrounded),
 
             // Irregular Triangle
@@ -115,7 +115,7 @@ class ShapesActivity : Activity() {
             RoundedPolygon(5),
 
             // Unrounded 8-point star
-            Star(8, innerRadius = .6f)
+            RoundedPolygon.star(8, innerRadius = .6f)
         ))
     }
 

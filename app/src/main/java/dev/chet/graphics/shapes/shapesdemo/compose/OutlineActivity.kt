@@ -32,7 +32,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
-import androidx.graphics.shapes.Star
+import androidx.graphics.shapes.star
 
 /**
  * This demo displays several shapes at the top of the window, which acts as buttons.
@@ -61,14 +61,14 @@ val shapes = listOf<RoundedPolygon>(
     // Row 1: Unrounded
     RoundedPolygon(4),
     RoundedPolygon(5),
-    Star(6),
-    Star(7),
+    RoundedPolygon.star(6),
+    RoundedPolygon.star(7),
 
     // Row 2: Rounded
     RoundedPolygon(4, rounding = CornerRounding(.2f)),
     RoundedPolygon(5, rounding = CornerRounding(.3f, .8f)),
-    Star(6, rounding = CornerRounding(.2f)),
-    Star(7, rounding = CornerRounding(.3f, .8f),
+    RoundedPolygon.star(6, rounding = CornerRounding(.2f)),
+    RoundedPolygon.star(7, rounding = CornerRounding(.3f, .8f),
         innerRounding = CornerRounding.Unrounded),
 )
 
