@@ -4,3 +4,9 @@
 /app/build/intermediates/javac/debug/classes/
 /.idea/vcs.xml
 /local.properties
+.idea/modules/app/ShapesDemo.app.iml
+.idea/misc.xml
+.idea/kotlinc.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/deploymentTargetDropDown.xml
+.idea/compiler.xml
