@@ -32,9 +32,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import dev.chet.graphics.shapes.shapesdemo.rotate
 import dev.chet.graphics.shapes.shapesdemo.toRadians
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 data class PanZoomRotateModel(
     var zoom: MutableState<Float> = mutableStateOf(1f),

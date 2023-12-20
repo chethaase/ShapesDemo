@@ -28,7 +28,6 @@ import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.star
-import dev.chet.graphics.shapes.shapesdemo.SquarePoints
 import dev.chet.graphics.shapes.shapesdemo.radialToCartesian
 import dev.chet.graphics.shapes.shapesdemo.toRadians
 
@@ -59,18 +58,21 @@ class ShapesActivity : Activity() {
         val layoutParams = LinearLayout.LayoutParams(width, height)
         layoutParams.setMargins(7, 30, 7, 5)
         view.layoutParams = layoutParams
-        // TODO: add click listener to show expanded version of shape at bottom of container
         return view
     }
 
     private fun setupShapes() {
         // Triangle vertices
-        val triangleinnerRadius = .1f
-        val trianglePoints = listOf(
-            radialToCartesian(1f, 270f.toRadians()),
-            radialToCartesian(1f, 30f.toRadians()),
-            radialToCartesian(triangleinnerRadius, 90f.toRadians()),
-            radialToCartesian(1f, 150f.toRadians()),
+        val triangleInnerRadius = .1f
+        val trianglePoints = floatArrayOf(
+            radialToCartesian(1f, 270f.toRadians()).x,
+            radialToCartesian(1f, 270f.toRadians()).y,
+            radialToCartesian(1f, 30f.toRadians()).x,
+            radialToCartesian(1f, 30f.toRadians()).y,
+            radialToCartesian(triangleInnerRadius, 90f.toRadians()).x,
+            radialToCartesian(triangleInnerRadius, 90f.toRadians()).y,
+            radialToCartesian(1f, 150f.toRadians()).x,
+            radialToCartesian(1f, 150f.toRadians()).y,
         )
 
         // CornerSE per-vertex rounding values
@@ -99,7 +101,7 @@ class ShapesActivity : Activity() {
                     innerRounding = CornerRounding.Unrounded),
 
             // Irregular Triangle
-            RoundedPolygon(trianglePoints, CornerRounding(.22f)),
+            RoundedPolygon(vertices = trianglePoints, CornerRounding(.22f)),
 
             // Line 2
 
@@ -109,7 +111,7 @@ class ShapesActivity : Activity() {
             RoundedPolygon(3, rounding = CornerRounding(.3f, 1f)),
 
             // CornerSE
-            RoundedPolygon(SquarePoints(), perVertexRounding = cornerSERounding),
+            RoundedPolygon(squarePoints(), perVertexRounding = cornerSERounding),
 
             // Unrounded Pentagon
             RoundedPolygon(5),
@@ -117,7 +119,12 @@ class ShapesActivity : Activity() {
             // Unrounded 8-point star
             RoundedPolygon.star(8, innerRadius = .6f)
         ))
+        for (i in 0 until shapes.size) {
+             shapes[i] = shapes[i].normalized()
+        }
     }
+
+    private fun squarePoints() = floatArrayOf(1f, 1f, -1f, 1f, -1f, -1f, 1f, -1f)
 
     private fun addShapeViews(container: ViewGroup) {
         val width = 200
@@ -144,7 +151,7 @@ class ShapesActivity : Activity() {
     private fun setupMorphClick(shapeIndex: Int, view: ShapeView) {
         view.setOnClickListener {
             morphView.morph = Morph(shapes[currentShapeIndex], shapes[shapeIndex])
-            val animator = ObjectAnimator.ofFloat(morphView.morph, "progress",
+            val animator = ObjectAnimator.ofFloat(morphView, "progress",
                 0f, 1f)
             animator.addUpdateListener {
                 morphView.invalidate()

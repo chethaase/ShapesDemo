@@ -41,11 +41,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.graphics.shapes.RoundedPolygon
 import dev.chet.graphics.shapes.shapesdemo.ShapeParameters
 import kotlin.math.roundToInt
 
 @Composable
-fun ShapeEditor(params: ShapeParameters, onClose: () -> Unit) {
+fun ShapeEditor(params: ShapeParameters, output: (String) -> Unit, onClose: () -> Unit) {
     val shapeParams = params.selectedShape().value
     var debug by remember { mutableStateOf(false) }
     var autoSize by remember { mutableStateOf(true) }
@@ -91,10 +92,11 @@ fun ShapeEditor(params: ShapeParameters, onClose: () -> Unit) {
                 .border(1.dp, Color.White)
                 .padding(2.dp)
         ) {
-            PolygonComposableImpl(params.genShape(autoSize = autoSize).also { poly ->
+            PolygonComposableImpl(params.genShape(autoSize = autoSize).let { poly ->
                 if (autoSize) {
-                    val matrix = calculateMatrix(poly.bounds, 1f, 1f)
-                    poly.transform(matrix)
+                    poly.normalized()
+                } else {
+                    poly
                 }
             }, debug = debug)
         }
@@ -116,11 +118,27 @@ fun ShapeEditor(params: ShapeParameters, onClose: () -> Unit) {
             )
             Spacer(Modifier.weight(1f))
             MyTextButton(
-                onClick = { params.selectedShape().value.debugDump() },
-                text = "Dump to Logcat"
+                onClick = {
+                    val outputString = params.selectedShape().value.shapeDetails + "\n" +
+                            "SVG:\n" + toSvgString(params.selectedShape().value.shapegen())
+                    output(outputString)
+                },
+                text = "Output Details"
             )
         }
     }
+}
+
+fun toSvgString(polygon: RoundedPolygon): String {
+    var svg = "d=\""
+    val cubics = polygon.cubics
+    if (cubics.size == 0) return svg.plus("\"")
+    svg = svg.plus("M ${cubics[0].anchor0X}, ${cubics[0].anchor0Y}")
+    for (c in cubics) {
+        svg = svg.plus(" C ${c.control0X}, ${c.control0Y}, " +
+                "${c.control1X}, ${c.control1Y}, ${c.anchor1X}, ${c.anchor1Y}")
+    }
+    return svg.plus("\"")
 }
 
 @Composable

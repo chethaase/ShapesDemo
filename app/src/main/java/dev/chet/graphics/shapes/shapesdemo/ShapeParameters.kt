@@ -16,30 +16,28 @@
 
 package dev.chet.graphics.shapes.shapesdemo
 
-import android.graphics.Matrix
-import android.graphics.PointF
-import android.util.Log
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Matrix
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
+import androidx.graphics.shapes.circle
+import androidx.graphics.shapes.rectangle
 import androidx.graphics.shapes.star
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 private val LOG_TAG = "ShapesParameters"
-private val DEBUG = false
-
-internal fun debugLog(message: String) {
-    if (DEBUG) Log.d(LOG_TAG, message)
-}
 
 data class ShapeItem(
     val name: String,
     val shapegen: () -> RoundedPolygon,
-    val debugDump: () -> Unit,
+    val shapeDetails: String = "",
     val usesSides: Boolean = true,
     val usesInnerRatio: Boolean = true,
     val usesRoundness: Boolean = true,
@@ -56,15 +54,15 @@ class ShapeParameters(
     rotation: Float = 0f,
     shapeId: ShapeId = ShapeId.Polygon
 ) {
-    internal val sides = mutableStateOf(sides.toFloat())
-    internal val innerRadius = mutableStateOf(innerRadius)
-    internal val roundness = mutableStateOf(roundness)
-    internal val smooth = mutableStateOf(smooth)
-    internal val innerRoundness = mutableStateOf(innerRoundness)
-    internal val innerSmooth = mutableStateOf(innerSmooth)
-    internal val rotation = mutableStateOf(rotation)
+    internal val sides = mutableFloatStateOf(sides.toFloat())
+    internal val innerRadius = mutableFloatStateOf(innerRadius)
+    internal val roundness = mutableFloatStateOf(roundness)
+    internal val smooth = mutableFloatStateOf(smooth)
+    internal val innerRoundness = mutableFloatStateOf(innerRoundness)
+    internal val innerSmooth = mutableFloatStateOf(innerSmooth)
+    internal val rotation = mutableFloatStateOf(rotation)
 
-    internal var shapeIx by mutableStateOf(shapeId.ordinal)
+    internal var shapeIx by mutableIntStateOf(shapeId.ordinal)
 
     fun copy() = ShapeParameters(
         this.sides.value.roundToInt(),
@@ -91,135 +89,194 @@ class ShapeParameters(
     internal val shapes = listOf(
         ShapeItem("Star", shapegen = {
             RoundedPolygon.star(
-                numVerticesPerRadius = this.sides.value.roundToInt(),
-                innerRadius = this.innerRadius.value,
-                rounding = CornerRounding(this.roundness.value, this.smooth.value),
+                numVerticesPerRadius = this.sides.floatValue.roundToInt(),
+                innerRadius = this.innerRadius.floatValue,
+                rounding = CornerRounding(this.roundness.floatValue, this.smooth.floatValue),
                 innerRounding = CornerRounding(
-                    this.innerRoundness.value,
-                    this.innerSmooth.value
+                    this.innerRoundness.floatValue,
+                    this.innerSmooth.floatValue
                 )
             )
         },
-            debugDump = {
-                debugLog(
-                    "ShapeParameters(sides = ${this.sides.value.roundToInt()}, " +
-                            "innerRadius = ${this.innerRadius.value}f, " +
-                            "roundness = ${this.roundness.value}f, " +
-                            "smooth = ${this.smooth.value}f, " +
-                            "innerRoundness = ${this.innerRoundness.value}f, " +
-                            "innerSmooth = ${this.innerSmooth.value}f, " +
-                            rotationAsString() +
-                            "shapeId = ShapeParameters.ShapeId.Star)"
-                )
-            }
+            shapeDetails = shapeDescription(id = "Star", sides = this.sides.floatValue.roundToInt(),
+                innerRadius = innerRadius, roundness = roundness,
+                smooth = smooth, innerRoundness = innerRoundness,
+                innerSmooth = innerSmooth, rotation = rotation,
+                code = "RoundedPolygon.star(numVerticesPerRadius = $sides, " +
+                        "innerRadius = $innerRadius, rounding = CornerRounding($roundness, $smooth), " +
+                        "innerRounding = CornerRounding($innerRoundness, $innerSmooth))")
         ),
         ShapeItem("Polygon", shapegen = {
             RoundedPolygon(
-                numVertices = this.sides.value.roundToInt(),
-                rounding = CornerRounding(this.roundness.value, this.smooth.value),
+                numVertices = this.sides.floatValue.roundToInt(),
+                rounding = CornerRounding(this.roundness.floatValue, this.smooth.floatValue),
             )
         },
-            debugDump = {
-                debugLog(
-                    "ShapeParameters(sides = ${this.sides.value.roundToInt()}, " +
-                            "roundness = ${this.roundness.value}f, " +
-                            "smooth = ${this.smooth.value}f, " +
-                            rotationAsString() +
-                            ")"
-                )
-            }, usesInnerRatio = false, usesInnerParameters = false
+            shapeDetails = shapeDescription(id = "Polygon",
+                sides = this.sides.floatValue.roundToInt(),
+                roundness = roundness, smooth = smooth, rotation = rotation,
+                code = "RoundedPolygon(numVertices = ${this.sides.floatValue.roundToInt()}," +
+                        "rounding = CornerRounding($roundness, $smooth))"
+            ),
+            usesInnerRatio = false, usesInnerParameters = false
         ),
         ShapeItem(
             "Triangle", shapegen = {
-                val points = listOf(
-                    radialToCartesian(1f, 270f.toRadians()),
-                    radialToCartesian(1f, 30f.toRadians()),
-                    radialToCartesian(this.innerRadius.value, 90f.toRadians()),
-                    radialToCartesian(1f, 150f.toRadians()),
+                val points = floatArrayOf(
+                    radialToCartesian(1f, 270f.toRadians()).x,
+                    radialToCartesian(1f, 270f.toRadians()).y,
+                    radialToCartesian(1f, 30f.toRadians()).x,
+                    radialToCartesian(1f, 30f.toRadians()).y,
+                    radialToCartesian(this.innerRadius.floatValue, 90f.toRadians()).x,
+                    radialToCartesian(this.innerRadius.floatValue, 90f.toRadians()).y,
+                    radialToCartesian(1f, 150f.toRadians()).x,
+                    radialToCartesian(1f, 150f.toRadians()).y
                 )
                 RoundedPolygon(
                     points,
-                    CornerRounding(this.roundness.value, this.smooth.value),
-                    center = PointZero
+                    CornerRounding(this.roundness.floatValue, this.smooth.floatValue),
+                    centerX = 0f,
+                    centerY = 0f
                 )
             },
-            debugDump = {
-                debugLog(
-                    "ShapeParameters(innerRadius = ${this.innerRadius.value}f, " +
-                            "smooth = ${this.smooth.value}f, " +
-                            rotationAsString() +
-                            "shapeId = ShapeParameters.ShapeId.Triangle)"
-                )
-            },
+            shapeDetails = shapeDescription(id = "Triangle", innerRadius = innerRadius,
+                smooth = smooth, rotation = rotation,
+                code = "val points = floatArrayOf(" +
+                        "    radialToCartesian(1f, 270f.toRadians()).x,\n" +
+                        "    radialToCartesian(1f, 270f.toRadians()).y,\n" +
+                        "    radialToCartesian(1f, 30f.toRadians()).x,\n" +
+                        "    radialToCartesian(1f, 30f.toRadians()).y,\n" +
+                        "    radialToCartesian($innerRadius, 90f.toRadians()).x,\n" +
+                        "    radialToCartesian($innerRadius, 90f.toRadians()).y,\n" +
+                        "    radialToCartesian(1f, 150f.toRadians()).x,\n" +
+                        "    radialToCartesian(1f, 150f.toRadians()).y)\n" +
+                        "RoundedPolygon(points, CornerRounding($roundness, $smooth), " +
+                        "centerX = 0f, centerY = 0f)"
+            ),
             usesSides = false, usesInnerParameters = false
         ),
         ShapeItem(
             "Blob", shapegen = {
-                val sx = this.innerRadius.value.coerceAtLeast(0.1f)
-                val sy = this.roundness.value.coerceAtLeast(0.1f)
+                val sx = this.innerRadius.floatValue.coerceAtLeast(0.1f)
+                val sy = this.roundness.floatValue.coerceAtLeast(0.1f)
                 RoundedPolygon(
-                    listOf(
-                        PointF(-sx, -sy),
-                        PointF(sx, -sy),
-                        PointF(sx, sy),
-                        PointF(-sx, sy),
+                    vertices = floatArrayOf(-sx, -sy,
+                        sx, -sy,
+                        sx, sy,
+                        -sx, sy,
                     ),
-                    rounding = CornerRounding(this.roundness.value, this.smooth.value),
-                    center = PointZero
+                    rounding = CornerRounding(min(sx, sy), this.smooth.floatValue),
+                    centerX = 0f, centerY = 0f
                 )
             },
-            debugDump = {
-                debugLog(
-                    "ShapeParameters(roundness = ${this.roundness.value}f, " +
-                            "smooth = ${this.smooth.value}f, " +
-                            rotationAsString() +
-                            "shapeId = ShapeParameters.ShapeId.Blob)"
-                )
-            },
-            usesSides = false, usesInnerParameters = false
-        ),
+            shapeDetails = shapeDescription(id = "Blob", roundness = roundness,
+                smooth = smooth, rotation = rotation,
+                code = "val sx = $innerRadius.coerceAtLeast(0.1f)\n" +
+                        "val sy = $roundness.coerceAtLeast(.1f)\n" +
+                        "val verts = floatArrayOf(-sx, -sy, sx, -sy, sx, sy, -sx, sy)\n" +
+                        "RoundedPolygon(verts, rounding = CornerRounding(min(sx, sy), $smooth)," +
+                        "centerX = 0f, centerY = 0f)"),
+            usesSides = false, usesInnerParameters = false),
         ShapeItem(
             "CornerSE", shapegen = {
                 RoundedPolygon(
-                    SquarePoints(),
+                    squarePoints(),
                     perVertexRounding = listOf(
-                        CornerRounding(this.roundness.value, this.smooth.value),
+                        CornerRounding(this.roundness.floatValue, this.smooth.floatValue),
                         CornerRounding(1f),
                         CornerRounding(1f),
                         CornerRounding(1f)
                     ),
-                    center = PointZero
+                    centerX = 0f,
+                    centerY = 0f
                 )
             },
-            debugDump = {
-                debugLog(
-                    "ShapeParameters(roundness = ${this.roundness.value}f, " +
-                            "smooth = ${this.smooth.value}f, " +
-                            rotationAsString() +
-                            "shapeId = ShapeParameters.ShapeId.CornerSE)"
+            shapeDetails = shapeDescription(id = "cornerSE", roundness = roundness,
+                smooth = smooth, rotation = rotation,
+                code = "RoundedPolygon(floatArrayOf(1f, 1f, -1f, 1f, -1f, -1f, 1f, -1f), " +
+                        "perVertexRounding = listOf(CornerRounding($roundness, $smooth), " +
+                        "CornerRounding(1f), CornerRounding(1f),  CornerRounding(1f))," +
+                        "centerX = 0f, centerY = 0f)"),
+            usesSides = false,
+            usesInnerRatio = false,
+            usesInnerParameters = false
+        ),
+        ShapeItem(
+            "Circle", shapegen = {
+                RoundedPolygon.circle(this.sides.floatValue.roundToInt())
+            },
+            shapeDetails = shapeDescription(id = "Circle", roundness = roundness,
+                smooth = smooth, rotation = rotation,
+                code = "RoundedPolygon.circle($sides)"),
+            usesSides = true,
+            usesInnerRatio = false,
+            usesInnerParameters = false
+        ),
+        ShapeItem(
+            "Rectangle", shapegen = {
+                RoundedPolygon.rectangle(width = 4f, height = 2f,
+                    rounding = CornerRounding(this.roundness.floatValue, this.smooth.floatValue),
                 )
             },
+            shapeDetails = shapeDescription(id = "Rectangle", numVerts = 4, roundness = roundness,
+                smooth = smooth, rotation = rotation,
+                code = "RoundedPolygon.rectangle(width = 4f, height = 2f, " +
+                        "rounding = CornerRounding($roundness, $smooth))"),
             usesSides = false,
             usesInnerRatio = false,
             usesInnerParameters = false
         )
     )
 
+    fun shapeDescription(
+        id: String? = null,
+        numVerts: Int? = null,
+        sides: Int? = null,
+        innerRadius: Float? = null,
+        roundness: Float? = null,
+        innerRoundness: Float? = null,
+        smooth: Float? = null,
+        innerSmooth: Float? = null,
+        rotation: Float? = null,
+        code: String? = null
+    ): String {
+        var description = "ShapeParameters:\n"
+        if (id != null) description += "shapeId = $id, "
+        if (numVerts != null) description += "numVertices = $numVerts, "
+        if (sides != null) description += "sides = $sides, "
+        if (innerRadius != null) description += "innerRadius = $innerRadius, "
+        if (roundness != null) description += "roundness = $roundness, "
+        if (innerRoundness != null) description += "innerRoundness = $innerRoundness, "
+        if (smooth != null) description += "smoothness = $smooth, "
+        if (innerSmooth != null) description += "innerSmooth = $innerSmooth, "
+        if (rotation != null) description += "rotation = $rotation, "
+        if (numVerts != null) description += "numVerts = $numVerts, "
+        if (code != null) {
+            description += "\nCode:\n$code"
+        }
+        return description
+    }
+
     fun selectedShape() = derivedStateOf { shapes[shapeIx] }
 
-    fun genShape(autoSize: Boolean = true) = selectedShape().value.shapegen().apply {
-        transform(Matrix().apply {
+    fun genShape(autoSize: Boolean = true) = selectedShape().value.shapegen().let { poly ->
+        poly.transformed(Matrix().apply {
             if (autoSize) {
+                val bounds = poly.getBounds()
                 // Move the center to the origin.
-                center
-                postTranslate(-(bounds.left + bounds.right) / 2, -(bounds.top + bounds.bottom) / 2)
+                translate(
+                    x = -(bounds.left + bounds.right) / 2,
+                    y = -(bounds.top + bounds.bottom) / 2
+                )
 
                 // Scale to the [-1, 1] range
-                val scale = 2f / max(bounds.width(), bounds.height())
-                postScale(scale, scale)
+                val scale = 2f / max(bounds.width, bounds.height)
+                scale(x = scale, y = scale)
             }
             // Apply the needed rotation
-            postRotate(rotation.value)
+            rotateZ(rotation.floatValue)
         })
     }
 }
+
+private fun squarePoints() = floatArrayOf(1f, 1f, -1f, 1f, -1f, -1f, 1f, -1f)
